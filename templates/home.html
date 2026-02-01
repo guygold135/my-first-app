@@ -1,183 +1,413 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Highlights</title>
     <style>
+        :root { 
+            --nav-height: 64px; 
+            --sidebar-width: 280px;
+            --primary-blue: #0ea5e9;
+        }
+
         body {
             font-family: 'Segoe UI', sans-serif;
-           background: linear-gradient(135deg, #72b7e6 0%, #bae6fd 100%);
+            background: linear-gradient(135deg, #71b3df 0%, #e0f2fe 100%);
+            margin: 0;
+            min-height: 100vh;
+            direction: ltr;
+        }
+
+        /* סרגל עליון מקורי */
+        .navbar {
+            width: 100%; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: fixed; top: 0; left: 0; z-index: 1100; padding: 10px 0;
+        }
+        .nav-container {
+            max-width: 1000px; margin: 0; display: flex;
+            justify-content: flex-start; align-items: center; padding: 0 20px; gap: 40px;
+        }
+        .nav-logo { font-size: 1.5rem; font-weight: bold; color: var(--primary-blue); text-decoration: none; }
+        .nav-links { list-style: none; display: flex; gap: 25px; margin: 0; padding: 0; }
+        .nav-links a { text-decoration: none; color: #64748b; font-weight: 500; }
+
+        /* סרגל צד בסגנון TradingView */
+        #right-sidebar {
+            position: fixed;
+            top: var(--nav-height);
+            right: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--nav-height));
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 15px 20px;
+            font-weight: bold;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .cat-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+
+        .cat-item:hover { background: #f8fafc; color: var(--primary-blue); }
+        .cat-item.active {
+            background: #f0f9ff;
+            color: var(--primary-blue);
+            border-right: 4px solid var(--primary-blue);
+            font-weight: bold;
+        }
+
+        .add-cat-btn {
+            background: none; border: none; color: var(--primary-blue); cursor: pointer;
+            font-size: 18px; padding: 2px 8px; line-height: 1; display: inline-block;
+            transform-origin: center center;
+            transition: transform 0.35s ease, color 0.35s ease;
+        }
+        .add-cat-btn:hover { color: #0369a1; }
+        .add-cat-btn.active {
+            transform: rotate(45deg);
+            color: #ef4444;
+        }
+        .new-cat-input-row {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.25s ease;
+        }
+        .new-cat-input-row input { flex: 1; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+        .new-cat-input-row input:focus { outline: none; border-color: var(--primary-blue); }
+        .new-cat-input-row .confirm-cat-btn { background: var(--primary-blue); color: white; border: none; padding: 4px 12px; border-radius: 5px; cursor: pointer; font-size: 13px; }
+        .new-cat-input-row .cancel-cat-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px; font-size: 16px; }
+        .new-cat-input-row .cancel-cat-btn:hover { color: #ef4444; }
+
+        /* תוכן מרכזי */
+        .main-content {
+            margin-top: var(--nav-height);
+            margin-right: var(--sidebar-width);
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 50px;
-            min-height: 100vh;
-            margin: 0;
         }
 
-        .list-wrapper {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin-top: 20px;
-        }
+        h1 { color: #0369a1; font-weight: 300; margin-bottom: 30px; }
 
-        h1 {
-            color: #0c4a6e;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
+        .list-wrapper { width: 100%; max-width: 500px; }
 
-        .input-container {
-            margin-bottom: 40px;
-            display: flex;
-            background: white;
-            padding: 5px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        input {
-            padding: 12px 15px;
-            border: none;
-            outline: none;
-            width: 250px;
-            font-size: 1rem;
-            border-radius: 10px 0 0 10px;
-        }
-
-        button#add-btn {
-            padding: 10px 20px;
-            background-color: #0ea5e9;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        #task-list {
-            width: 100%;
-            max-width: 400px;
-        }
-
+        /* פריט משימה */
         .highlight-item {
-            background: white;
-            padding: 15px 20px;
-            margin-bottom: 12px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            transition: all 0.3s ease;
-            position: relative;
-            border: 1px solid #f0f9ff;
+            background: white; padding: 16px; margin-bottom: 12px; border-radius: 12px;
+            display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
-        /* עיצוב הטקסט במצב רגיל */
-        .task-text {
-            flex-grow: 1;
-            margin-right: 12px;
-            color: #334155;
-            transition: all 0.3s;
-        }
-
-        /* עיצוב המשימה כשהיא מסומנת כבוצעה */
-        .highlight-item.completed {
-            background: #f1f5f9;
-        }
+        .task-text { flex-grow: 1; color: #334155; }
+        .task-text.done { color: #94a3b8; text-decoration: line-through; }
+        .highlight-item.done .del-btn { opacity: 0; transition: opacity 0.2s; }
+        .highlight-item.done:hover .del-btn { opacity: 1; }
         
-        .highlight-item.completed .task-text {
-            text-decoration: line-through;
-            color: #94a3b8;
+        /* תיבת הוספה */
+        .input-container {
+            display: none; background: white; padding: 15px; border-radius: 12px;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1); margin-bottom: 20px; gap: 10px;
+        }
+        .input-container.show { display: flex; }
+
+        .toggle-input-btn {
+            position: fixed; bottom: 30px; right: calc(var(--sidebar-width) + 30px);
+            width: 50px; height: 50px; background: var(--primary-blue); color: white;
+            border: none; border-radius: 50%; font-size: 24px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+            transition: transform 0.35s ease, background-color 0.35s ease, box-shadow 0.35s ease;
+        }
+        .toggle-input-btn.active {
+            transform: rotate(45deg);
+            background-color: #ef4444;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
         }
 
-        /* הצ'קבוקס */
-        .check-box {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            accent-color: #0ea5e9;
-        }
+        .del-btn { background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px; }
 
-        /* כפתור האיקס - מוסתר כברירת מחדל */
-        .delete-btn {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            display: none; /* מוסתר */
-            align-items: center;
-            justify-content: center;
-            margin-right: 8px;
-            order: -1; /* מוודא שזה מימין לצ'קבוקס (בתצוגת RTL) */
-        }
-
-        /* הכפתור יופיע רק כאשר המשימה מכילה את המחלקה completed */
-        .completed .delete-btn {
-            display: flex;
-        }
-
-        .highlight-item:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-
+        .category-section { margin-bottom: 24px; }
+        .category-header { font-weight: 600; color: var(--primary-blue); margin-bottom: 10px; padding-left: 4px; font-size: 0.95rem; }
     </style>
 </head>
 <body>
 
-    <h1>todays highlight</h1>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">My App</a>
+            <ul class="nav-links">
+                <li><a href="#" onclick="switchTab('all')">Highlights</a></li>
+                <li><a href="#">Planner</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <div class="input-container">
-        <input type="text" id="task-input" placeholder="new mission">
-        <button id="add-btn">add</button>
-    </div>
+    <aside id="right-sidebar">
+        <div class="sidebar-header">My Categories</div>
+        <div id="categories-list" style="flex:1; overflow-y:auto;"></div>
+    </aside>
 
-    <div id="task-list"></div>
+    <main class="main-content">
+        <h1 id="main-title">all tasks</h1>
+
+        <div class="list-wrapper">
+            <div class="input-container" id="input-box">
+                <input type="text" id="task-input" placeholder="What's next?" style="flex:1;">
+                <select id="category-select"></select>
+                <button id="add-task-confirm" style="background:var(--primary-blue); color:white; border:none; padding:5px 15px; border-radius:5px;">Add</button>
+            </div>
+            <div id="task-list"></div>
+        </div>
+    </main>
+
+    <button class="toggle-input-btn" id="toggle-plus">+</button>
 
     <script>
-        const taskInput = document.getElementById('task-input');
-        const addBtn = document.getElementById('add-btn');
-        const taskList = document.getElementById('task-list');
+        let categories = [];
+        let currentTab = 'all';
+        let addingCategory = false;
 
-        function addTask() {
-            const text = taskInput.value.trim();
-            if (text === "") return;
-
+        function escapeHtml(str) {
             const div = document.createElement('div');
-            div.className = 'highlight-item';
-
-            div.innerHTML = `
-                <input type="checkbox" class="check-box">
-                <button class="delete-btn">✕</button>
-                <span class="task-text">${text}</span>
-            `;
-
-            // לוגיקה לצ'קבוקס
-            const cb = div.querySelector('.check-box');
-            cb.addEventListener('change', () => {
-                if(cb.checked) {
-                    div.classList.add('completed');
-                } else {
-                    div.classList.remove('completed');
-                }
-            });
-
-            // לוגיקה למחיקה
-            const del = div.querySelector('.delete-btn');
-            del.onclick = () => div.remove();
-
-            taskList.appendChild(div);
-            taskInput.value = "";
+            div.textContent = str;
+            return div.innerHTML;
         }
 
-        addBtn.onclick = addTask;
-        taskInput.onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
+        function save() { localStorage.setItem('my_app_data', JSON.stringify(categories)); }
+        function load() {
+            const data = localStorage.getItem('my_app_data');
+            categories = data ? JSON.parse(data) : [{name: 'General', missions: []}];
+            if (categories.length === 0) categories = [{name: 'General', missions: []}];
+            categories.forEach(cat => {
+                cat.missions = (cat.missions || []).map(m =>
+                    typeof m === 'string' ? { text: m, done: false } : m
+                );
+            });
+            render();
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.getElementById('main-title').innerText = tabName === 'all' ? "all tasks" : tabName;
+            render();
+        }
+
+        function render() {
+            renderSidebar();
+            renderMainList();
+            renderSelect();
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('categories-list');
+            container.innerHTML = '';
+            const allTasksDiv = document.createElement('div');
+            allTasksDiv.className = `cat-item ${currentTab === 'all' ? 'active' : ''}`;
+            const allTasksSpan = document.createElement('span');
+            allTasksSpan.textContent = '📁 All Tasks';
+            allTasksSpan.style.cursor = 'pointer';
+            allTasksSpan.onclick = () => switchTab('all');
+            const addCatBtn = document.createElement('button');
+            addCatBtn.className = 'add-cat-btn' + (addingCategory ? ' active' : '');
+            addCatBtn.textContent = '+';
+            addCatBtn.onclick = (e) => { e.stopPropagation(); toggleAddCategory(); };
+            addCatBtn.title = 'Add category';
+            allTasksDiv.appendChild(allTasksSpan);
+            allTasksDiv.appendChild(addCatBtn);
+            container.appendChild(allTasksDiv);
+
+            if (addingCategory) {
+                const inputRow = document.createElement('div');
+                inputRow.className = 'new-cat-input-row';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = 'Category name...';
+                input.id = 'new-cat-inline-input';
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'confirm-cat-btn';
+                confirmBtn.textContent = 'Add';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'cancel-cat-btn';
+                cancelBtn.textContent = '✕';
+                cancelBtn.title = 'Cancel';
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') confirmCategory();
+                    if (e.key === 'Escape') cancelAddCategory();
+                };
+                confirmBtn.onclick = (e) => { e.stopPropagation(); confirmCategory(); };
+                cancelBtn.onclick = (e) => { e.stopPropagation(); cancelAddCategory(); };
+                inputRow.appendChild(input);
+                inputRow.appendChild(confirmBtn);
+                inputRow.appendChild(cancelBtn);
+                container.appendChild(inputRow);
+                setTimeout(() => input.focus(), 50);
+            }
+
+            categories.forEach((cat, idx) => {
+                const div = document.createElement('div');
+                div.className = `cat-item ${currentTab === cat.name ? 'active' : ''}`;
+                const span = document.createElement('span');
+                span.textContent = `# ${cat.name}`;
+                div.appendChild(span);
+                if (categories.length > 1) {
+                    const delBtn = document.createElement('button');
+                    delBtn.className = 'del-btn';
+                    delBtn.textContent = '✕';
+                    delBtn.onclick = (e) => { e.stopPropagation(); deleteCat(idx); };
+                    div.appendChild(delBtn);
+                }
+                div.onclick = () => switchTab(cat.name);
+                container.appendChild(div);
+            });
+        }
+
+        function toggleAddCategory() {
+            addingCategory = !addingCategory;
+            render();
+        }
+
+        function cancelAddCategory() {
+            addingCategory = false;
+            render();
+        }
+
+        function confirmCategory() {
+            const input = document.getElementById('new-cat-inline-input');
+            const val = input ? input.value.trim() : '';
+            if (val) {
+                categories.push({ name: val, missions: [] });
+                save();
+                addingCategory = false;
+                render();
+            }
+        }
+
+        function renderMainList() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = '';
+            const catsToShow = currentTab === 'all' ? categories : categories.filter(c => c.name === currentTab);
+            catsToShow.forEach((cat, idx) => {
+                const catIdx = categories.findIndex(c => c.name === cat.name);
+                if (cat.missions.length === 0 && currentTab !== 'all') return;
+                if (currentTab === 'all' && cat.missions.length === 0) return;
+                if (currentTab === 'all') {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+                    const header = document.createElement('div');
+                    header.className = 'category-header';
+                    header.textContent = `# ${cat.name}`;
+                    section.appendChild(header);
+                    cat.missions.forEach((m, mIdx) => {
+                        section.appendChild(createTaskItem(catIdx, mIdx, m));
+                    });
+                    list.appendChild(section);
+                } else {
+                    cat.missions.forEach((m, mIdx) => {
+                        list.appendChild(createTaskItem(catIdx, mIdx, m));
+                    });
+                }
+            });
+        }
+
+        function createTaskItem(catIdx, mIdx, m) {
+            const div = document.createElement('div');
+            div.className = 'highlight-item' + (m.done ? ' done' : '');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = m.done;
+            checkbox.onchange = () => toggleDone(catIdx, mIdx);
+            const span = document.createElement('span');
+            span.className = 'task-text' + (m.done ? ' done' : '');
+            span.textContent = m.text;
+            div.appendChild(checkbox);
+            div.appendChild(span);
+            if (m.done) {
+                const delBtn = document.createElement('button');
+                delBtn.className = 'del-btn';
+                delBtn.textContent = '✕';
+                delBtn.onclick = () => deleteMission(catIdx, mIdx);
+                div.appendChild(delBtn);
+            }
+            return div;
+        }
+
+        function toggleDone(catIdx, mIdx) {
+            categories[catIdx].missions[mIdx].done = !categories[catIdx].missions[mIdx].done;
+            save();
+            render();
+        }
+
+        function renderSelect() {
+            const sel = document.getElementById('category-select');
+            sel.innerHTML = categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join('');
+            if(currentTab !== 'all') {
+                sel.value = currentTab;
+                sel.style.display = 'none';
+            } else {
+                sel.style.display = '';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('add-task-confirm').onclick = () => {
+            const text = document.getElementById('task-input').value.trim();
+            const catName = currentTab === 'all' ? document.getElementById('category-select').value : currentTab;
+            if(text) {
+                const cat = categories.find(c => c.name === catName);
+                cat.missions.push({ text: text, done: false });
+                save(); render();
+                document.getElementById('task-input').value = '';
+                document.getElementById('input-box').classList.remove('show');
+                document.getElementById('toggle-plus').classList.remove('active');
+            }
+        };
+
+        document.getElementById('toggle-plus').onclick = () => {
+            const box = document.getElementById('input-box');
+            const btn = document.getElementById('toggle-plus');
+            box.classList.toggle('show');
+            btn.classList.toggle('active', box.classList.contains('show'));
+        };
+
+        document.getElementById('task-input').onkeydown = (e) => {
+            if (e.key === 'Enter') document.getElementById('add-task-confirm').click();
+        };
+
+        function deleteMission(catIdx, mIdx) {
+            categories[catIdx].missions.splice(mIdx, 1);
+            save(); render();
+        }
+
+        function deleteCat(idx) {
+            if (categories.length <= 1) {
+                alert("must have at least one category");
+                return;
+            }
+            const cat = categories[idx];
+            if(confirm("Delete category?")) {
+                if(cat.name === currentTab) currentTab = 'all';
+                categories.splice(idx, 1);
+                save(); render();
+            }
+        }
+
+        load();
     </script>
 </body>
 </html>
